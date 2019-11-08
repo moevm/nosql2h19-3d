@@ -1,8 +1,35 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+h1 {
+  color: blue;
+  text-align: center;
 }
 
-a {
-  color: #00B7FF;
+ul {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  justify-content: center;
+}
+.main_but {
+  width: 250px;
+  margin-bottom: 10px;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.col_t_but {
+  margin-right: 10px;
+}
+
+.coll_but{
+  width: 250px;
+  margin-bottom: 10px;
+  padding: 0 8px;
+}
+
+.collection_table_buttons {
+  align-items:center;
 }
