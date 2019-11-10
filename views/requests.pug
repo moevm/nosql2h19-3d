@@ -1,4 +1,34 @@
-h1 Выполнить запрос:
-a( href='/testreq') Вывести имя текущей коллекции
-a( href='/') Назад
+div(class="main_div")
+    input#current_collection
+    div(class='buttons1')
+        a(href='/load_new_collection')
+            button(type='button') Загрузить новую коллекцию
+        a(href='/choose_collection')
+            button(type='button')#collection_choosing Выбрать существующую коллекцию
+    h2 Выполнить запрос:
+    div(class='req_buttons')
+        div(class='req_field')
+            button(class = 'req_button' type='button') Найти расстояние, на котором вокруг выбранной точки находится менее n точек
+            div(class='req_input')
+                input(class="first_req" placeholder="Координаты точек")#coords1
+                input(class="first_req" placeholder="Количество точек")#num_of_points1
+        div(class='req_field')
+            button(class = 'req_button' type='button') Найти все кубы, в которых менее n точек
+            div(class='req_input')
+                input(class="first_req" placeholder="Количество точек")#num_of_points2
+        div(class='req_field')
+            button(class = 'req_button' type='button') Найти все соседние точки от заданных координат на расстоянии не более n
+            div(class='req_input')
+                input(class="first_req" placeholder="Координаты точек")#coords3
+                input(class="first_req" placeholder="Количество точек")#num_of_points3
+        div(class='req_field')
+            a(href='/stats')
+                button(class = 'req_button' type='button') Подсчет статистики
+            div(class='req_input')
+                input(class="first_req" placeholder="Длина ребра куба")#cube_length
+        button(class = 'req_button' type='button') Вывод координат центров кубов, где есть не менее n точек
+
+
+    a( href='/choose_collection') Назад
 link(rel="stylesheet", type="text/css", href="/stylesheets/style.css")
+script(src='requests.js')

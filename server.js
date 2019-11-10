@@ -5,7 +5,11 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const MongoClient = require('mongodb').MongoClient;
 const url = "mongodb://localhost:27017/";
+let spawn = require('child_process').spawn;
+const fs=require('fs');
+const path = require('path')
 let collection_name;
+
 
 app.use(express.static(__dirname + "/public/"));
 app.use(cookieParser());
@@ -13,9 +17,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set("view engine", "pug");
-
-
-
 
 app.get("/", (req, res) => {
     res.render("index.pug");
@@ -62,11 +63,6 @@ app.get("/coll_chosen", (req,res) => {
     res.render('requests.pug');
 });
 
-
-app.get('/testreq', (req,res) => {
-    console.log(collection_name);
-});
-
 app.post('/save_chosen_collection_name', (req,res) => {
     console.log(req.body);
     collection_name = req.body.name;
@@ -89,6 +85,41 @@ app.post('/add-new-collection', (req, res) => {
     res.json({status: 'ok'})
 });
 
+app.post('/export_dbase', (req, res) => {
+    console.log(req.body)
+    let child = spawn("C:/Program Files/MongoDB/Server/4.2/bin/mongodump", ['--db', '3DCloud', '--out', `${req.body.name}`]);
+    child.stdout.on('data', function (data) {
+        console.log('stdout: ' + data);
+    });
+
+    child.stderr.on('data', function (data) {
+        console.log('stderr: ' + data);
+    });
+    child.on('close', function (code) {
+        console.log('child process exited with code ' + code);
+    });
+    res.json({status: 'ok'});
+});
+
+app.post('/import_dbase', (req, res) => {
+    console.log(req.body)
+    let child = spawn("C:/Program Files/MongoDB/Server/4.2/bin/mongorestore", [`${req.body.name}`]);
+    child.stdout.on('data', function (data) {
+        console.log('stdout: ' + data);
+    });
+
+    child.stderr.on('data', function (data) {
+        console.log('stderr: ' + data);
+    });
+    child.on('close', function (code) {
+        console.log('child process exited with code ' + code);
+    });
+    console.log('salam3');
+    res.json({status: 'ok'});
+});
+
+
+
 app.post('/list_collections', (req, res) => {
     let arr = [];
     new Promise((resolve) => {
@@ -105,6 +136,11 @@ app.post('/list_collections', (req, res) => {
     }).then(data => {
         res.json(data);
     })
+});
+
+
+app.post("/acquire_collection_name", (req, res) => {
+    res.json({name: `${collection_name}`});
 });
 
 app.listen(port,  err => {
