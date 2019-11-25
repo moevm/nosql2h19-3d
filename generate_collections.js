@@ -31,9 +31,9 @@ function form_data_model(file_name) {
 
   var unit = Math.max.apply(null, [max_dif_x, max_dif_y, max_dif_z]);
   var large_cube_side = 2*unit; // Длина стороны самого большого куба
-  var big_cube_side = Number.parseFloat((large_cube_side/2.4662120743).toFixed(9))
-  var smaller_cube_side = Number.parseFloat((big_cube_side/2.4662120743).toFixed(9));
-  var smallest_cube_side = Number.parseFloat((smaller_cube_side/2.4662120743).toFixed(9));
+  var big_cube_side = Number.parseFloat((large_cube_side/3).toFixed(9))
+  var smaller_cube_side = Number.parseFloat((big_cube_side/3).toFixed(9));
+  var smallest_cube_side = Number.parseFloat((smaller_cube_side/3).toFixed(9));
   // console.log("Large Cube side: " + large_cube_side);
   // console.log("Big Cube side: " + big_cube_side);
   // console.log("Smaller Cube side: " + smaller_cube_side);
@@ -63,9 +63,9 @@ function form_cubes(smallest, smaller, big, unit, Points) {
     all_cubes: []
   };
 
-  for (var i = 0; i < 15; i++) { // Заполнение id всех кубов (Cube_id = "Nx_Ny_Nz", где Ni-число кубов смещения от LDB координат вдоль оси i)
-    for (var j = 0; j < 15; j++) {
-      for (var k = 0; k < 15; k++) {
+  for (var i = 0; i < 27; i++) { // Заполнение id всех кубов (Cube_id = "Nx_Ny_Nz", где Ni-число кубов смещения от LDB координат вдоль оси i)
+    for (var j = 0; j < 27; j++) {
+      for (var k = 0; k < 27; k++) {
         var temp_cube = Object.assign({}, Cube);
         temp_cube.Cube_id = i + '_' + j + '_' + k;
         Cubes.all_cubes.push(temp_cube);
