@@ -1,5 +1,8 @@
 h1 Выберите файл c данными для заполнения коллекции
-a( href='/') Назад
-
-a( href='/requests') Далее
+center
+  div
+    form(method="post" action="/requests")
+      input(type="file" class="files" name="rabbit")#rabbit_file
+      button(type="submit" id="btn" value="Далее") Далее
+    button(onclick="window.location='/'") Назад
 link(rel="stylesheet", type="text/css", href="/stylesheets/style.css")

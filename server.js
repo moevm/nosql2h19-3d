@@ -1,4 +1,5 @@
 const express = require("express");
+const data_model = require('./generate_collections');
 const app = express();
 const port = 3000;
 const cookieParser = require("cookie-parser");
@@ -6,7 +7,7 @@ const bodyParser = require("body-parser");
 const MongoClient = require('mongodb').MongoClient;
 const url = "mongodb://localhost:27017/";
 let spawn = require('child_process').spawn;
-const fs=require('fs');
+const fs = require('fs');
 const path = require('path')
 let collection_name;
 
@@ -46,8 +47,10 @@ app.get('/export', (req, res) => {
     res.render('export.pug');
 });
 
-app.get('/requests', (req, res) => {
-    res.render('requests.pug');
+app.post('/requests', (req, res) => {
+  var new_collection;
+  new_collection = data_model.form_data_model(req.body.rabbit);
+  res.render('requests.pug');
 });
 
 app.get('/load_new_collection', (req, res) => {
