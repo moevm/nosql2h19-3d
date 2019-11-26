@@ -49,7 +49,9 @@ app.get('/export', (req, res) => {
 
 app.post('/requests', (req, res) => {
   var new_collection;
-  new_collection = data_model.form_data_model(req.body.rabbit);
+  new_collection = data_model.form_data_model(req.body.rabbit); // Здесь сформированная коллекция
+  let file_dir = './Data/' + collection_name + '.json';
+  var st = fs.writeFileSync(file_dir, JSON.stringify(new_collection)); // И в этом файле тоже
   res.render('requests.pug');
 });
 
