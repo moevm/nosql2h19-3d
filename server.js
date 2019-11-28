@@ -12,6 +12,7 @@ const path = require('path')
 let collection_name;
 
 
+
 app.use(express.static(__dirname + "/public/"));
 app.use(cookieParser());
 app.use(bodyParser.json());
@@ -53,7 +54,65 @@ app.post('/requests', (req, res) => {
   let file_dir = './Data/' + collection_name + '.json';
   var st = fs.writeFileSync(file_dir, JSON.stringify(new_collection)); // И в этом файле тоже
   res.render('requests.pug');
+
 });
+
+
+app.post('/get_stats', (req,res)=>{
+    new Promise((resolve) => {
+        MongoClient.connect(url,  (err, db) => {
+            if (err) throw err;
+            let result = {};
+            let dbo = db.db(`${req.body.name}`);
+            dbo.collection('Points').count({}, (err, data) =>{
+                if (err) throw err;
+                result.points = data;
+            });
+            dbo.collection('Cubes').count({}, (err, data) =>{
+                if (err) throw err;
+                result.cubes = data;
+
+            });
+            dbo.collection('Cubes').findOne({'center_number':0})
+                .then((doc)=>{
+                    if(!doc) throw new Error('not found');
+                    result.cube_size = doc;
+                    db.close();
+                    resolve(result);
+                })
+
+        });
+    }).then(result => {
+        res.json(result);
+    })
+});
+app.get('/requests1', (req, res) => {
+    res.render('requests.pug');
+});
+
+app.post('/insert_collection', (req, res) => {
+    collection_name = fs.readFileSync('./Data/currcoll.txt', "utf8");
+    let file_dir = './Data/' + collection_name + '.json';
+    let new_collection = fs.readFileSync(file_dir, "utf8");
+    let translated = JSON.parse(new_collection);
+    new Promise((resolve) => {
+        MongoClient.connect(url,  (err, db) => {
+            if (err) throw err;
+            let dbo = db.db(`${collection_name}`);
+            dbo.collection('Points').insertMany(translated.Points.all_points, (err, data) =>{
+                if (err) throw err;
+            });
+            dbo.collection('Cubes').insertMany(translated.Cubes.all_cubes, (err, data) =>{
+                if (err) throw err;
+                resolve(data);
+            });
+
+        });
+    }).then(data => {
+        res.json(data);
+    })
+});
+
 
 app.get('/load_new_collection', (req, res) => {
     res.render('load_new_collection.pug');
@@ -71,23 +130,33 @@ app.get("/coll_chosen", (req,res) => {
 app.post('/save_chosen_collection_name', (req,res) => {
     console.log(req.body);
     collection_name = req.body.name;
+    try { fs.unlinkSync('./Data/currcoll.txt');} catch(e) {console.log('error');}
+    var st2 = fs.writeFileSync('./Data/currcoll.txt', collection_name);
     res.json({status: 'ok'});
 });
 
+
+
 app.post('/add-new-collection', (req, res) => {
-    console.log(req.body)
+    collection_name = req.body.name;
+    try { fs.unlinkSync('./Data/currcoll.txt');} catch(e) {console.log('error');}
+    var st2 = fs.writeFileSync('./Data/currcoll.txt', collection_name);
     MongoClient.connect(url, function(err, db) {
         if (err) throw err;
-        let dbo = db.db("3DCloud");
-        dbo.createCollection(req.body.name, function(err, result) {
+        let dbo = db.db(`${req.body.name}`);
+        dbo.createCollection("Points", function(err, result) {
             if(err) throw err;
-            collection_name = req.body.name;
+            console.log('Collection created');
+        });
+        dbo.createCollection("Cubes", function(err, result) {
+            if(err) throw err;
             console.log('Collection created');
             db.close();
         });
+
     });
 
-    res.json({status: 'ok'})
+    res.json({name: collection_name});
 });
 
 app.post('/export_dbase', (req, res) => {
@@ -119,7 +188,6 @@ app.post('/import_dbase', (req, res) => {
     child.on('close', function (code) {
         console.log('child process exited with code ' + code);
     });
-    console.log('salam3');
     res.json({status: 'ok'});
 });
 
@@ -130,11 +198,17 @@ app.post('/list_collections', (req, res) => {
     new Promise((resolve) => {
         MongoClient.connect(url,  (err, db) => {
             if (err) throw err;
-            let dbo = db.db("3DCloud");
-                dbo.listCollections().toArray( (err, collInfos) =>{
+            let dbo = db.db("admin").admin();
+                dbo.listDatabases( (err, collInfos) =>{
                     if (err) throw err;
+                    let res = [];
+                    console.log(collInfos.databases);
+                    for(let i = 0; i < collInfos.databases.length;i++)
+                    {
+                        res[i] = collInfos.databases[i].name;
+                    }
                     db.close();
-                    resolve(collInfos)
+                    resolve(res);
                 });
 
         });
@@ -145,6 +219,7 @@ app.post('/list_collections', (req, res) => {
 
 
 app.post("/acquire_collection_name", (req, res) => {
+
     res.json({name: `${collection_name}`});
 });
 

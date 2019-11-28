@@ -8,8 +8,15 @@ window.onload = async () => {
     });
 
     let result = await response.json();
+
     document.getElementById('current_collection').value = result.name;
 
-    console.log(result);
+   await fetch('/insert_collection', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+        }
+    }).then(data => console.log(data));
+
 
 };

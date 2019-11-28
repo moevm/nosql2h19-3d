@@ -120,4 +120,4 @@ function find_neighbours(coord_arr) { // Функция, формирующая 
   return neib_arr;
 }
 
-module.exports = { form_data_model: form_data_model }
+module.exports = { form_data_model: form_data_model };

@@ -1,20 +1,21 @@
-h1 Коллекция
+h1 База данных
 div(class='collection_table_buttons')
     a(href='/collection_table')
-        button(class="col_t_but" type="button") Таблица коллекций
-    input
+        button(class="coll_but" type="button") Имя БД
+    select#selector
 div(class='collection_table_buttons')
     a(href='/collection_table')
-        button(class="col_t_but" type="button") Таблица коллекций
-    input
+        button(class="coll_but" type="button") Количество точек
+    input#pointinp
 div(class='collection_table_buttons')
     a(href='/collection_table')
-        button(class="col_t_but" type="button") Таблица коллекций
-    input
+        button(class="coll_but" type="button") Количество кубов
+    input#cubeinp
 div(class='collection_table_buttons')
     a(href='/collection_table')
-        button(class="col_t_but" type="button") Таблица коллекций
+        button(class="coll_but" type="button") Размер куба
     input
 
 a( href='/') Назад
 link(rel="stylesheet", type="text/css", href="/stylesheets/style.css")
+script(src='collection_table.js')
