@@ -1,5 +1,4 @@
 window.onload = async () => {
-//
     await fetch('/list_collections', {
         method: 'POST',
         headers: {
@@ -18,18 +17,28 @@ window.onload = async () => {
     selector.onchange = async () => {
         let name = selector.value;
         let body = {name};
-        await fetch('/get_stats', {
+        var responce = await fetch('/get_stats', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json;charset=utf-8'
             },
             body: JSON.stringify(body)
-        }).then(result => result.json())
-            .then(data => {
-                console.log(data);
-                document.getElementById('pointinp').value = data.points;
-                document.getElementById('cubeinp').value = data.cubes;
-            });
+          });
+        if (responce.ok) {
+          data = await responce.json();
+          console.log(data);
+          document.getElementById('pointinp').value = data.points;
+          document.getElementById('cubeinp').value = data.cubes;
+          document.getElementById('cubesize').value = data.cubesize;
+        }
+        else {
+          alert(responce.status)
+        }
+        // }).then(result => result.json())
+        //     .then(data => {
+        //         console.log(data);
+
+        //     });
 
     }
 

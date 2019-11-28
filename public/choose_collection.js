@@ -7,12 +7,10 @@ window.onload = async () => {
         }
     }).then(result => result.json())
        .then(data => {
-            console.log(data);
             let list = document.getElementById('choose_coll_ul');
             data.forEach(item => {
                 const li = document.createElement('li', );
                 li.innerHTML = "<button type='button' class='coll_but'>" + item +"</button>";
-                console.log(list);
                 list.append(li);
             })
 

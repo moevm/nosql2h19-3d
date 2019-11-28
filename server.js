@@ -9,7 +9,7 @@ const url = "mongodb://localhost:27017/";
 let spawn = require('child_process').spawn;
 const fs = require('fs');
 const path = require('path')
-let collection_name;
+let collection_name; var cube_size = 0;
 
 
 
@@ -25,7 +25,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/collection_table", (req, res) => {
-    res.render("collection_table.pug");
+  rf = JSON.parse(fs.readFileSync('./Data/Db_info/Db_info.json', "utf8"));
+  console.log(rf);
+  res.render("collection_table.pug");
 });
 
 app.get("/completed", (req, res) => {
@@ -48,50 +50,53 @@ app.get('/export', (req, res) => {
     res.render('export.pug');
 });
 
+app.post('/first_request', (req, res) => {
+  var number = req.body.numb;
+  res.render('first_request.pug', {"number": ' ' + number + ' точек'});
+});
+
 app.post('/requests', (req, res) => {
   var new_collection;
-  new_collection = data_model.form_data_model(req.body.rabbit); // Здесь сформированная коллекция
+  [new_collection, cube_size] = data_model.form_data_model(req.body.rabbit); // Здесь сформированная коллекция
   let file_dir = './Data/' + collection_name + '.json';
+  var col_info = {
+    "collection_name": fs.readFileSync('./Data/Db_info/currcoll.txt', "utf8"),
+    "cube_size": cube_size
+  }
+  var c_save = fs.writeFileSync('./Data/Db_info/Db_info.json', JSON.stringify(col_info));
   var st = fs.writeFileSync(file_dir, JSON.stringify(new_collection)); // И в этом файле тоже
   res.render('requests.pug');
-
 });
 
 
-app.post('/get_stats', (req,res)=>{
-    new Promise((resolve) => {
+app.post('/get_stats', (req,res) => {
+    new Promise((resolve, reject) => {
         MongoClient.connect(url,  (err, db) => {
             if (err) throw err;
-            let result = {};
+            var result = {
+              cubesize: JSON.parse(fs.readFileSync('./Data/Db_info/Db_info.json', 'utf8')).cube_size
+            };
             let dbo = db.db(`${req.body.name}`);
-            dbo.collection('Points').count({}, (err, data) =>{
+            dbo.collection('Points').countDocuments({}, (err, data) =>{
                 if (err) throw err;
                 result.points = data;
             });
-            dbo.collection('Cubes').count({}, (err, data) =>{
+            dbo.collection('Cubes').countDocuments({}, (err, data) =>{
                 if (err) throw err;
                 result.cubes = data;
-
+                resolve(result);
             });
-            dbo.collection('Cubes').findOne({'center_number':0})
-                .then((doc)=>{
-                    if(!doc) throw new Error('not found');
-                    result.cube_size = doc;
-                    db.close();
-                    resolve(result);
-                })
-
         });
     }).then(result => {
         res.json(result);
     })
 });
 app.get('/requests1', (req, res) => {
-    res.render('requests.pug');
+    res.render('requests1.pug');
 });
 
 app.post('/insert_collection', (req, res) => {
-    collection_name = fs.readFileSync('./Data/currcoll.txt', "utf8");
+    collection_name = fs.readFileSync('./Data/Db_info/currcoll.txt', "utf8");
     let file_dir = './Data/' + collection_name + '.json';
     let new_collection = fs.readFileSync(file_dir, "utf8");
     let translated = JSON.parse(new_collection);
@@ -130,17 +135,47 @@ app.get("/coll_chosen", (req,res) => {
 app.post('/save_chosen_collection_name', (req,res) => {
     console.log(req.body);
     collection_name = req.body.name;
-    try { fs.unlinkSync('./Data/currcoll.txt');} catch(e) {console.log('error');}
-    var st2 = fs.writeFileSync('./Data/currcoll.txt', collection_name);
+    try { fs.unlinkSync('./Data/Db_info/currcoll.txt');} catch(e) {console.log('error');}
+    var st2 = fs.writeFileSync('./Data/Db_info/currcoll.txt', collection_name);
     res.json({status: 'ok'});
 });
 
+app.post('/db_first_request', (req, res) => {
+    var n = Number.parseInt(req.body.name);
+    collection_name = fs.readFileSync('./Data/Db_info/currcoll.txt', "utf8");
+    let file_dir = './Data/' + collection_name + '.json';
+    let new_collection = fs.readFileSync(file_dir, "utf8");
+    let translated = JSON.parse(new_collection);
+    new Promise((resolve) => {
+        MongoClient.connect(url,  (err, db) => {
+            if (err) throw err;
+            let dbo = db.db(`${collection_name}`);
+            // здесь тело запроса к БД
+            dbo.collection('Points').aggregate([
+              { $group: {
+                _id: "$Cube_id" ,
+                count: { $sum: 1 }
+              } },
+              { $match: {
+                count: { $lt: n }
+              } },
+            ], function (err, cursor) {
+              if (err) throw err;
+              cursor.toArray(function(err, documents) {
+                resolve(documents)
+              });
+            });
+        });
+    }).then(data => {
+        res.json(data);
+    })
+});
 
 
 app.post('/add-new-collection', (req, res) => {
     collection_name = req.body.name;
-    try { fs.unlinkSync('./Data/currcoll.txt');} catch(e) {console.log('error');}
-    var st2 = fs.writeFileSync('./Data/currcoll.txt', collection_name);
+    try { fs.unlinkSync('./Data/Db_info/currcoll.txt');} catch(e) {console.log('error');}
+    var st2 = fs.writeFileSync('./Data/Db_info/currcoll.txt', collection_name);
     MongoClient.connect(url, function(err, db) {
         if (err) throw err;
         let dbo = db.db(`${req.body.name}`);
@@ -219,8 +254,8 @@ app.post('/list_collections', (req, res) => {
 
 
 app.post("/acquire_collection_name", (req, res) => {
-
-    res.json({name: `${collection_name}`});
+  collection_name = fs.readFileSync('./Data/Db_info/currcoll.txt', "utf8");
+  res.json({name: `${collection_name}`});
 });
 
 app.listen(port,  err => {

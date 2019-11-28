@@ -18,5 +18,4 @@ window.onload = async () => {
         }
     }).then(data => console.log(data));
 
-
 };

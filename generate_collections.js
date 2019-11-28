@@ -33,7 +33,7 @@ function form_data_model(file_name) {
     Points: Points,
     Cubes: Cubes
   }
-  return New_collection
+  return [New_collection, smallest_cube_side]
 }
 
 function form_points(smallest, unit, Points) { // Функция, формирующая документ точек (Points)

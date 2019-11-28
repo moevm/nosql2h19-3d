@@ -12,10 +12,11 @@ div(class="main_div")
             div(class='req_input')
                 input(class="first_req" placeholder="Координаты точек")#coords1
                 input(class="first_req" placeholder="Количество точек")#num_of_points1
-        div(class='req_field')
-            button(class = 'req_button' type='button') Найти все кубы, в которых менее n точек
-            div(class='req_input')
-                input(class="first_req" placeholder="Количество точек")#num_of_points2
+        form(method="post" action="/first_request")
+          div(class='req_field')
+              button(id = 'first_btn' class = 'req_button' type='submit') Найти все кубы, в которых менее n точек
+              div(class='req_input'  style='display: inline-block; margin-left: 79px')
+                  input(class="first_req" placeholder="Количество точек" name="numb")#num_of_points2
         div(class='req_field')
             button(class = 'req_button' type='button') Найти все соседние точки от заданных координат на расстоянии не более n
             div(class='req_input')
