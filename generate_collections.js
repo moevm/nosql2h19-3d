@@ -3,7 +3,7 @@ const fs = require('fs')
 function form_data_model(file_name) {
   let file_dir = './Data/' + file_name;
   var st = fs.readFileSync(file_dir, 'UTF8');
-  var data_arr = st.split('\r\n')
+  var data_arr = st.split('\n')
   var Point = { x: 0, y: 0, z: 0, Cube_x: 0, Cube_y: 0, Cube_z: 0, Cube_id: 0 } // Объявление документов
   var Points = { all_points: [] };
   var Cubes = { all_cubes: [] };

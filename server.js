@@ -55,6 +55,18 @@ app.post('/first_request', (req, res) => {
   res.render('first_request.pug', {"number": ' ' + number + ' точек'});
 });
 
+app.post('/second_request', (req, res) => {
+  var number = req.body.numb2;
+  res.render('second_request.pug', {"number": ' ' + number + ' точек'});
+});
+
+app.post('/third_request', (req, res) => {
+  var number = req.body.numb1;
+  var coord = req.body.coords;
+  res.render('third_request.pug', {"number": ' ' + number + ' точек', "coordinates": coord});
+});
+
+
 app.post('/requests', (req, res) => {
   var new_collection;
   [new_collection, cube_size] = data_model.form_data_model(req.body.rabbit); // Здесь сформированная коллекция
@@ -171,6 +183,85 @@ app.post('/db_first_request', (req, res) => {
     })
 });
 
+
+app.post('/db_second_request', (req, res) => {
+    var n = Number.parseInt(req.body.name);
+    collection_name = fs.readFileSync('./Data/Db_info/currcoll.txt', "utf8");
+    let file_dir = './Data/' + collection_name + '.json';
+    let new_collection = fs.readFileSync(file_dir, "utf8");
+    let translated = JSON.parse(new_collection);
+    new Promise((resolve) => {
+        MongoClient.connect(url,  (err, db) => {
+            if (err) throw err;
+            let dbo = db.db(`${collection_name}`);
+            // здесь тело запроса к БД
+
+            dbo.collection('Points').aggregate([
+              { $group: {
+                _id: "$Cube_id" ,
+                coordinates: { $first: {
+            		x: "$Cube_x",
+            		y: "$Cube_y",
+            		z: "$Cube_z" } },
+                count: { $sum: 1 }
+              } },
+              { $match: {
+                count: { $gte: n }
+              } },
+            ], function (err, cursor) {
+              if (err) throw err;
+              cursor.toArray(function(err, documents) {
+                resolve(documents)
+              });
+            });
+        });
+    }).then(data => {
+        res.json(data);
+    })
+});
+
+
+
+app.post('/db_third_request', (req, res) => {
+    var n = Number.parseInt(req.body.numb);
+    [X, Y, Z] = [ Number.parseFloat(req.body.coords.split(',')[0]), Number.parseFloat(req.body.coords.split(',')[1]), Number.parseFloat(req.body.coords.split(',')[2]) ];
+    collection_name = fs.readFileSync('./Data/Db_info/currcoll.txt', "utf8");
+    let file_dir = './Data/' + collection_name + '.json';
+    let new_collection = fs.readFileSync(file_dir, "utf8");
+    let translated = JSON.parse(new_collection);
+    new Promise((resolve) => {
+        MongoClient.connect(url,  (err, db) => {
+            if (err) throw err;
+            let dbo = db.db(`${collection_name}`);
+            // здесь тело запроса к БД
+
+            db.collection('Points').aggregate([
+              { $project: {
+                 x: "$x",
+                 y:"$y",
+                 z:"$z",
+                 distance: { $sqrt:
+            		{$add: [
+            			{$pow: [{$subtract: ["$x", X ] },2]},
+            			{$pow: [{$subtract: ["$y", Y ] },2]},
+            			{$pow: [{$subtract: ["$z", Z ] },2]},
+            ]}}
+            }},
+            {$match:{distance:{$ne:0}}},
+            {$sort:{distance:1}},
+            {$limit:n},
+            {$skip:n-1}
+            ]).pretty(), function (err, cursor) {
+              if (err) throw err;
+              cursor.toArray(function(err, documents) {
+                resolve(documents)
+              });
+            });
+        });
+    }).then(data => {
+        res.json(data);
+    })
+});
 
 app.post('/add-new-collection', (req, res) => {
     collection_name = req.body.name;
