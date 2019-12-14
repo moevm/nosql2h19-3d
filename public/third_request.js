@@ -18,18 +18,11 @@ window.onload = async () => {
   let result = await response.json();
   var ol = document.createElement("ul");
   var div = document.getElementById('main_div');
-  var end = ''; var len = result.length + '';
-  if (len[len.length - 1] == 1)
-    end = ' куб';
-  if (len[len.length - 1] < 5 && len[len.length - 1] > 1)
-    end = ' куба';
-  if (len[len.length - 1] >= 5 || len[len.length - 1] == 0)
-    end = ' кубов';
 
   if (result.length > 15) {
     for (var i = 0; i < 15; i++) {
       let li = document.createElement('li');
-      li.innerHTML = '<p>' + JSON.stringify(result[i]).replace('_id', 'ID куба').replace('count', 'Количество точек') + '</p>';
+      li.innerHTML = '<p>' + JSON.stringify(result[i]).replace('_id', 'ID куба').replace('distance', 'Расстояние') + '</p>';
       ol.append(li);
     }
     let li = document.createElement('li');
@@ -39,14 +32,9 @@ window.onload = async () => {
   else {
     for (var i = 0; i < result.length; i++) {
       let li = document.createElement('li');
-      li.innerHTML = '<p>' + JSON.stringify(result[i]).replace('_id', 'ID куба').replace('count', 'Количество точек') + '</p>';
+      li.innerHTML = '<p>' + JSON.stringify(result[i]).replace('_id', 'ID куба').replace('distance', 'Расстояние') + '</p>';
       ol.append(li);
     }
   }
-
-  let li = document.createElement('li');
-  li.innerHTML = '<p> Всего ' + result.length + end + ' </p>';
-  ol.append(li);
-
   div.append(ol)
 }

@@ -179,6 +179,8 @@ app.post('/db_first_request', (req, res) => {
             });
         });
     }).then(data => {
+        var file_dir = './Data/Req_res/second_request.json';
+        fs.writeFile(file_dir, JSON.stringify(data), function(err, data) {});
         res.json(data);
     })
 });
@@ -216,6 +218,8 @@ app.post('/db_second_request', (req, res) => {
             });
         });
     }).then(data => {
+        var file_dir = './Data/Req_res/last_request.json';
+        fs.writeFile(file_dir, JSON.stringify(data), function(err, data) {});
         res.json(data);
     })
 });
@@ -235,7 +239,7 @@ app.post('/db_third_request', (req, res) => {
             let dbo = db.db(`${collection_name}`);
             // здесь тело запроса к БД
 
-            db.collection('Points').aggregate([
+            dbo.collection('Points').aggregate([
               { $project: {
                  x: "$x",
                  y:"$y",
@@ -251,7 +255,7 @@ app.post('/db_third_request', (req, res) => {
             {$sort:{distance:1}},
             {$limit:n},
             {$skip:n-1}
-            ]).pretty(), function (err, cursor) {
+          ], function (err, cursor) {
               if (err) throw err;
               cursor.toArray(function(err, documents) {
                 resolve(documents)
@@ -259,6 +263,8 @@ app.post('/db_third_request', (req, res) => {
             });
         });
     }).then(data => {
+        var file_dir = './Data/Req_res/first_request.json';
+        fs.writeFile(file_dir, JSON.stringify(data), function(err, data) {});
         res.json(data);
     })
 });

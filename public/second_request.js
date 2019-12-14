@@ -26,7 +26,7 @@ window.onload = async () => {
   if (result.length > 15) {
     for (var i = 0; i < 15; i++) {
       let li = document.createElement('li');
-      li.innerHTML = '<p>' + JSON.stringify(result[i]).replace('_id', 'ID куба').replace('count', 'Количество точек') + '</p>';
+      li.innerHTML = '<p>' + JSON.stringify(result[i]).replace('_id', 'ID куба').replace('count', 'Количество точек').replace('coordinates', 'Координаты центра') + '</p>';
       ol.append(li);
     }
     let li = document.createElement('li');
@@ -36,7 +36,7 @@ window.onload = async () => {
   else {
     for (var i = 0; i < result.length; i++) {
       let li = document.createElement('li');
-      li.innerHTML = '<p>' + JSON.stringify(result[i]).replace('_id', 'ID куба').replace('count', 'Количество точек') + '</p>';
+      li.innerHTML = '<p>' + JSON.stringify(result[i]).replace('_id', 'ID куба').replace('count', 'Количество точек').replace('coordinates', 'Координаты центра') + '</p>';
       ol.append(li);
     }
   }
