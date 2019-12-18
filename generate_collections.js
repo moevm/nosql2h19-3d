@@ -48,7 +48,7 @@ function form_points(smallest, unit, Points) { // Функция, формиру
 }
 
 function form_cubes(smallest, unit, Cubes) { // Функция, формирующая документ кубов (Cubes)
-  var Cube = { Cube_id: 0, Neib_cube: [], center_number: 0 }
+  var Cube = { Cube_id: 0, Neib_cube: {cube_id: []}, center_number: 0 }
   var Boundry_Cube = { // Координаты самого большого куба, в который входят все точки
     LUF: [unit, -unit, unit], // Левый верхний угол передней грани {x, y, z}
     LDF: [unit, -unit, -unit], // Левый нижний угол передней грани {x, y, z}
@@ -75,7 +75,7 @@ function form_cubes(smallest, unit, Cubes) { // Функция, формирую
   for (var i = 0; i < Cubes.all_cubes.length; i++) { // Заполнение списка соседей для каждого наименьшего куба
     var temp_cube = Object.assign({}, Cubes.all_cubes[i])
     cube_id = [Number.parseInt(Cubes.all_cubes[i].Cube_id.split('_')[0]), Number.parseInt(Cubes.all_cubes[i].Cube_id.split('_')[1]), Number.parseInt(Cubes.all_cubes[i].Cube_id.split('_')[2])]
-    Cubes.all_cubes[i].Neib_cube = find_neighbours(cube_id);
+    Cubes.all_cubes[i].Neib_cube.cube_id = find_neighbours(cube_id);
   }
 
   for (var i = 0; i < Cubes.all_cubes.length; i++) { // Заполнение параметра center_number для каждого наименьшего куба
@@ -113,6 +113,7 @@ function find_neighbours(coord_arr) { // Функция, формирующая 
       if (temp_arr[j] + coord_arr[j] >= 0 && temp_arr[j] + coord_arr[j] <= 26) // Должны быть в пределах от 0 до 26
         check++;
     }
+    neib_arr[neib_arr.length - 1] = neib_arr[neib_arr.length - 1].join('_');
     if (check != 3)
       neib_arr.pop();
     check = 0;
