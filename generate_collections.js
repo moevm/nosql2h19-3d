@@ -63,19 +63,12 @@ function form_cubes(smallest, unit, Cubes) { // Функция, формирую
   for (var i = 0; i < 27; i++) { // Заполнение id всех наименьших кубов (Cube_id = "Nx_Ny_Nz", где Ni-число кубов смещения от LDB координат вдоль оси i)
     for (var j = 0; j < 27; j++) {
       for (var k = 0; k < 27; k++) {
-        var temp_cube = Object.assign({}, Cube);
+        var temp_cube = { Cube_id: 0, Neib_cube: {cube_id: []}, center_number: 0 }
         temp_cube.Cube_id = k + '_' + j + '_' + i;
+        temp_cube.Neib_cube.cube_id = find_neighbours([k, j, i]) // Заполнение списка соседей для каждого наименьшего куба
         Cubes.all_cubes.push(temp_cube);
       }
     }
-  }
-
-  var temp_cube = Cube;
-  var cube_id = [0, 0, 0];
-  for (var i = 0; i < Cubes.all_cubes.length; i++) { // Заполнение списка соседей для каждого наименьшего куба
-    var temp_cube = Object.assign({}, Cubes.all_cubes[i])
-    cube_id = [Number.parseInt(Cubes.all_cubes[i].Cube_id.split('_')[0]), Number.parseInt(Cubes.all_cubes[i].Cube_id.split('_')[1]), Number.parseInt(Cubes.all_cubes[i].Cube_id.split('_')[2])]
-    Cubes.all_cubes[i].Neib_cube.cube_id = find_neighbours(cube_id);
   }
 
   for (var i = 0; i < Cubes.all_cubes.length; i++) { // Заполнение параметра center_number для каждого наименьшего куба
@@ -88,7 +81,6 @@ function form_cubes(smallest, unit, Cubes) { // Функция, формирую
     if (cube_id[0] == 13 && cube_id[1] == 13 && cube_id[2] == 13)
       Cubes.all_cubes[i].center_number = 3; // куб является центром самого большого куба
   }
-
   return Cubes
 }
 
@@ -97,6 +89,7 @@ function isInteger(num) { // Вспомогательная функция дл�
 }
 
 function find_neighbours(coord_arr) { // Функция, формирующая массив соседей для заданных координат
+//  var coord_arr = [Number.parseInt(el.Cube_id.split('_')[0]), Number.parseInt(el.Cube_id.split('_')[1]), Number.parseInt(el.Cube_id.split('_')[2])]
   var arr_diff = []; var neib_arr = [];
   for (var i = -1; i < 2; i++) // Формирование массива всех возможных единичных отклонений
     for (var j = -1; j < 2; j++)
