@@ -55,6 +55,17 @@ app.post('/first_request', (req, res) => {
   res.render('first_request.pug', {"number": ' ' + number + ' точек'});
 });
 
+app.post('/stats_request', (req, res) => {
+    let number = req.body.numbstat;
+    res.render('stats_request.pug', {number});
+});
+
+app.post('/last_request', (req, res) => {
+    let number = req.body.lastnum;
+    let coord = req.body.lastcoords;
+    res.render('last_request.pug', {"number": ' ' + number, "coordinates": coord})
+});
+
 app.post('/second_request', (req, res) => {
   var number = req.body.numb2;
   res.render('second_request.pug', {"number": ' ' + number + ' точек'});
@@ -116,6 +127,9 @@ app.post('/insert_collection', (req, res) => {
         MongoClient.connect(url,  (err, db) => {
             if (err) throw err;
             let dbo = db.db(`${collection_name}`);
+
+            dbo.collection('Points').drop().catch(console.log('not exist Points'));
+            dbo.collection('Cubes').drop().catch(console.log('not exist Cubes'));
             dbo.collection('Points').insertMany(translated.Points.all_points, (err, data) =>{
                 if (err) throw err;
             });
@@ -150,6 +164,19 @@ app.post('/save_chosen_collection_name', (req,res) => {
     try { fs.unlinkSync('./Data/Db_info/currcoll.txt');} catch(e) {console.log('error');}
     var st2 = fs.writeFileSync('./Data/Db_info/currcoll.txt', collection_name);
     res.json({status: 'ok'});
+});
+
+app.post('/db_obtain_m_info', (req,res) => {
+    MongoClient.connect(url + `${collection_name}`).then(db => {
+        let dbo = db.db(`${collection_name}`);
+        dbo.collection('m').find({}).toArray().then(data => {
+            let file_dir = './Data/Req_res/stats_request.json';
+            fs.writeFile(file_dir, JSON.stringify(data), function (err, data) {});
+            db.close();
+            res.json(data);
+        })
+    })
+
 });
 
 app.post('/db_first_request', (req, res) => {
@@ -224,7 +251,44 @@ app.post('/db_second_request', (req, res) => {
     })
 });
 
+app.post('/db_last_request', (req, res) => {
+    let n = Number.parseFloat(req.body.numb);
+    [X, Y, Z] = [ Number.parseFloat(req.body.coords.split(',')[0]), Number.parseFloat(req.body.coords.split(',')[1]), Number.parseFloat(req.body.coords.split(',')[2]) ];
+    console.log(n);
+    console.log(X);
+    console.log(Y);
+    console.log(Z);
+    collection_name = fs.readFileSync('./Data/Db_info/currcoll.txt', "utf8");
+    let file_dir = './Data/' + collection_name + '.json';
+    let new_collection = fs.readFileSync(file_dir, "utf8");
+    MongoClient.connect(url + `${collection_name}`).then(db => {
+        let dbo = db.db(`${collection_name}`);
+        dbo.collection('Points').aggregate([
+            { $project: {
+                    x: "$x",
+                    y:"$y",
+                    z:"$z",
+                    distance: { $sqrt:
+                            {$add: [
+                                    {$pow: [{$subtract: ["$x", X ] },2]},
+                                    {$pow: [{$subtract: ["$y", Y ] },2]},
+                                    {$pow: [{$subtract: ["$z", Z ] },2]},
+                                ]}
+                    }
+                }},
+            { $match: {
+                    distance: { $lte: n }
+                }}
+        ]).toArray().
+        then(data => {
+            let file_dir = './Data/Req_res/last_request.json';
+            fs.writeFile(file_dir, JSON.stringify(data), function(err, data) {});
+            console.log(data);
+            res.json(data);
+        })
 
+    })
+});
 
 app.post('/db_third_request', (req, res) => {
     var n = Number.parseInt(req.body.numb);
@@ -269,6 +333,122 @@ app.post('/db_third_request', (req, res) => {
     })
 });
 
+
+app.post('/db_stats_request', (req, res) => {
+
+    let s = Number.parseInt(req.body.name);
+    let itemsProcessed = 0;
+    if (s < 0 || s > 3)
+        res.json({res: 'bad'});
+    else {
+        let s1 = 1;
+        if (s === 0) {
+            console.log('s = 0');
+            MongoClient.connect(url + `${collection_name}`).then(db => {
+                let dbo = db.db(`${collection_name}`);
+                dbo.collection('Points').aggregate([
+                    { $group: {
+                            _id: "$Cube_id" ,
+                            count: { $sum: 1 }
+                        }},
+                    { $merge: {into: "m"}}
+                ]).toArray().
+                then(docs => {
+                    console.log('requested');
+                    res.json({res: 'ok'});
+                });
+            })
+        }
+        else if (s === 2)
+            s1 = 4;
+        else if (s === 3)
+            s1 = 13;
+
+        if (s > 0 && s < 4) {
+            console.log(s1);
+            collection_name = fs.readFileSync('./Data/Db_info/currcoll.txt', "utf8");
+            let doc1;
+            let f, c = [];
+            let result = [];
+            console.log(collection_name);
+            MongoClient.connect(url + `${collection_name}`).
+            then((db) => {
+                dbo = db.db(`${collection_name}`);
+                dbo.collection('Cubes').aggregate([
+                    {
+                        $match: {
+                            center_number: {$gte: s}
+                        }
+                    },
+                    {
+                        $graphLookup: {
+                            from: 'Cubes',
+                            startWith: '$Neib_cube.Cube_id',
+                            connectFromField: 'Neib_cube.Cube_id',
+                            connectToField: 'Cube_id',
+                            as: 'r',
+                            maxDepth: s1 - 1
+                        }
+                    },
+                    {
+                        $project: {
+                            Cube_id: 1,
+                            'r.Cube_id': 1
+                        }
+                    }
+                ]).toArray().
+                then((data) => {
+                    dbo.collection('m').drop().catch(() => {console.log('m not exist')}).
+                    then(data0 => dbo.collection('New').drop().catch(() => {console.log('not exist New')}).
+                    then(data1 => dbo.collection('New').insertMany(data).
+                    then(data2 => dbo.collection('New').distinct("Cube_id").
+                    then(res1 => res1.forEach((obj) => {
+                        dbo.collection('New').distinct("r.Cube_id", {Cube_id: obj}).
+                        then(async (data3) => {
+                            data3.push(obj);
+                            await dbo.collection('Points').aggregate([
+                                {
+                                    $match: {
+                                        Cube_id: {$in: data3}
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: "$Cube_id",
+                                        count: {$sum: 1}
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: obj,
+                                        count: {$sum: "$count"}
+                                    }
+                                },
+                                {$merge: {into: "m"}}
+                            ]).toArray().
+                            then(doc2 => {
+                                result.push(doc2);
+                                itemsProcessed++;
+                                if (itemsProcessed === res1.length)
+                                    res.json({res: 'ok'});
+                            });
+                        });
+
+
+                    })))))
+                });
+
+            })
+        }
+    }
+});
+
+function callback (res)
+{
+    var file_dir = './Data/Req_res/stats_request.json';
+    fs.writeFile(file_dir, JSON.stringify(res), function (err, data) {});
+    res.json(res);
+}
 app.post('/add-new-collection', (req, res) => {
     collection_name = req.body.name;
     try { fs.unlinkSync('./Data/Db_info/currcoll.txt');} catch(e) {console.log('error');}
@@ -278,13 +458,14 @@ app.post('/add-new-collection', (req, res) => {
         let dbo = db.db(`${req.body.name}`);
         dbo.createCollection("Points", function(err, result) {
             if(err) throw err;
-            console.log('Collection created');
+            console.log('points created');
         });
         dbo.createCollection("Cubes", function(err, result) {
             if(err) throw err;
             console.log('Collection created');
             db.close();
         });
+
 
     });
 

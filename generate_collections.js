@@ -48,7 +48,7 @@ function form_points(smallest, unit, Points) { // Функция, формиру
 }
 
 function form_cubes(smallest, unit, Cubes) { // Функция, формирующая документ кубов (Cubes)
-  var Cube = { Cube_id: 0, Neib_cube: {cube_id: []}, center_number: 0 }
+  var Cube = { Cube_id: 0, Neib_cube: {Cube_id: []}, center_number: 0 }
   var Boundry_Cube = { // Координаты самого большого куба, в который входят все точки
     LUF: [unit, -unit, unit], // Левый верхний угол передней грани {x, y, z}
     LDF: [unit, -unit, -unit], // Левый нижний угол передней грани {x, y, z}
@@ -63,9 +63,9 @@ function form_cubes(smallest, unit, Cubes) { // Функция, формирую
   for (var i = 0; i < 27; i++) { // Заполнение id всех наименьших кубов (Cube_id = "Nx_Ny_Nz", где Ni-число кубов смещения от LDB координат вдоль оси i)
     for (var j = 0; j < 27; j++) {
       for (var k = 0; k < 27; k++) {
-        var temp_cube = { Cube_id: 0, Neib_cube: {cube_id: []}, center_number: 0 }
+        var temp_cube = { Cube_id: 0, Neib_cube: {Cube_id: []}, center_number: 0 }
         temp_cube.Cube_id = k + '_' + j + '_' + i;
-        temp_cube.Neib_cube.cube_id = find_neighbours([k, j, i]) // Заполнение списка соседей для каждого наименьшего куба
+        temp_cube.Neib_cube.Cube_id = find_neighbours([k, j, i]) // Заполнение списка соседей для каждого наименьшего куба
         Cubes.all_cubes.push(temp_cube);
       }
     }

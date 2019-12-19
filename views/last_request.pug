@@ -1,0 +1,11 @@
+h1 Найти все соседние точки от заданных координат на расстоянии не более
+    = number
+p(style="font-size: 17px") Заданные координаты точки:
+    = ' ' + coordinates
+a( href='/requests1') Назад
+input(value =number.slice(1).split(' ')[0] type='hidden')#numb_dots
+input(value =coordinates type='hidden')#coords
+center
+    div(style="font-size: 15; font-family: sans-serif")#main_div
+link(rel="stylesheet", type="text/css", href="/stylesheets/style.css")
+script(src='last_request.js')
