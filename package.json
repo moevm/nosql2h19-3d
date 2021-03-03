@@ -15,7 +15,7 @@
     "http-errors": "~1.6.3",
     "mongodb": "^3.3.3",
     "nodemon": "^1.19.4",
-    "pug": "^2.0.4"
+    "pug": "^3.0.1"
   },
   "main": "server.js",
   "devDependencies": {},
